@@ -1,7 +1,7 @@
 version: '3'
 services:
   titra:
-    image: kromit/titra
+    image: titraio/titra
     container_name: titra_app
     depends_on:
       - mongodb
@@ -23,7 +23,7 @@ services:
     volumes:
       - titra_db_volume:/data/db
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     container_name: watchtower
     restart: always
     command: --cleanup --schedule "0 0 0 * * *" --label-enable
