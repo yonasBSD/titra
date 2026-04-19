@@ -5,6 +5,7 @@ RUN meteor --version
 WORKDIR /app/
 COPY package.json .
 COPY package-lock.json .
+COPY rspack.config.js .
 RUN meteor npm ci
 COPY public/ ./public/
 COPY server/ ./server/

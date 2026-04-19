@@ -1,7 +1,6 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { check, Match } from 'meteor/check'
 import { Accounts } from 'meteor/accounts-base'
-import { Random } from 'meteor/random'
 import { authenticationMixin, adminAuthenticationMixin, transactionLogMixin } from '../../../utils/server_method_helpers.js'
 
 /**

@@ -2,7 +2,7 @@ import { fetch } from 'meteor/fetch'
 import { getGlobalSettingAsync } from '../server_method_helpers'
 
 export const getOpenAIResponse = async (prompt) => {
-  if (!await getGlobalSettingAsync('openapi_apikey')) {
+  if (!await getGlobalSettingAsync('openai_apikey')) {
     try {
       const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
