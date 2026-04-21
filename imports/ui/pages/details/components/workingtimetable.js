@@ -19,12 +19,12 @@ Template.workingtimetable.onCreated(function workingtimetableCreated() {
   dayjs.extend(utc)
   this.workingTimeEntries = new ReactiveVar()
   this.totalWorkingTimeEntries = new ReactiveVar()
-
   this.autorun(() => {
     if (this.data?.project.get()
       && this.data?.resource.get()
       && this.data?.period.get()
       && this.data?.limit.get()) {
+      this.subscribe('userRoles')
       this.projectUsersHandle = this.subscribe('projectResources', { projectId: this.data?.project.get() })
       const methodParameters = {
         projectId: this.data?.project.get(),

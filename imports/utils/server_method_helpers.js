@@ -530,11 +530,11 @@ async function buildworkingTimeSelectorAsync(projectId, period, dates, userId, l
 async function workingTimeEntriesMapper(entry) {
   dayjs.extend(customParseFormat)
   const meteorUser = await Meteor.users.findOneAsync({ _id: entry._id.userId })
-  const userBreakStartTime = dayjs(meteorUser?.profile?.breakStartTime ? meteorUser.profile.breakStartTime : getGlobalSettingAsync('breakStartTime'), 'HH:mm')
-  const userBreakDuration = meteorUser?.profile?.breakDuration ? meteorUser.profile.breakDuration : getGlobalSettingAsync('breakDuration')
+  const userBreakStartTime = dayjs(meteorUser?.profile?.breakStartTime ? meteorUser.profile.breakStartTime : await getGlobalSettingAsync('breakStartTime'), 'HH:mm')
+  const userBreakDuration = meteorUser?.profile?.breakDuration ? meteorUser.profile.breakDuration : await getGlobalSettingAsync('breakDuration')
   const userBreakEndTime = dayjs(userBreakStartTime, 'HH:mm').add(userBreakDuration, 'hour')
-  const userRegularWorkingTime = meteorUser?.profile?.regularWorkingTime ? meteorUser.profile.regularWorkingTime : getGlobalSettingAsync('regularWorkingTime')
-  const userStartTime = meteorUser?.profile?.dailyStartTime ? meteorUser.profile.dailyStartTime : getGlobalSettingAsync('dailyStartTime')
+  const userRegularWorkingTime = meteorUser?.profile?.regularWorkingTime ? meteorUser.profile.regularWorkingTime : await getGlobalSettingAsync('regularWorkingTime')
+  const userStartTime = meteorUser?.profile?.dailyStartTime ? meteorUser.profile.dailyStartTime : await getGlobalSettingAsync('dailyStartTime')
   let userEndTime = dayjs(userStartTime, 'HH:mm').add(entry.totalTime, 'hour')
   if (await getGlobalSettingAsync('addBreakToWorkingTime')) {
     userEndTime = userEndTime.add(userBreakDuration, 'hour')

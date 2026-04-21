@@ -623,12 +623,15 @@ const getWorkingHoursForPeriod = new ValidatedMethod({
       page,
     )
     const totalEntriesTimecardsRaw = await Timecards.rawCollection()
-      .aggregate(await buildworkingTimeSelectorAsync(projectId, period, dates, userId, limit, page)).toArray()
+      .aggregate(await buildworkingTimeSelectorAsync(projectId, period, dates, userId, limit, page))
+      .toArray()
     const totalEntries = totalEntriesTimecardsRaw.length
     const workingHoursObject = {}
     workingHoursObject.totalEntries = totalEntries
+    console.log(JSON.stringify(aggregationSelector))
     const workingHoursTimeCardsRaw = await Timecards.rawCollection().aggregate(aggregationSelector)
       .toArray()
+      console.log(workingHoursTimeCardsRaw)
     const workingHours = await Promise.all(workingHoursTimeCardsRaw.map(workingTimeEntriesMapper))
     workingHoursObject.workingHours = workingHours
     return workingHoursObject

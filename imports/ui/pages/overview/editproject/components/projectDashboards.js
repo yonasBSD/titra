@@ -1,10 +1,10 @@
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra'
+import { Modal } from 'bootstrap'
 import { Dashboards } from '../../../../../api/dashboards/dashboards'
 import Projects from '../../../../../api/projects/projects'
 import { t } from '../../../../../utils/i18n.js'
 import { showToast, showErrorToast } from '../../../../../utils/frontend_helpers'
 import { periodToString } from '../../../../../utils/periodHelpers'
-import bootstrap from 'bootstrap'
 
 import './projectDashboards.html'
 import '../../components/dashboardModal.js'
@@ -77,7 +77,7 @@ Template.projectDashboards.events({
     event.preventDefault()
     templateInstance.editingDashboard.set({})
     Tracker.afterFlush(() => {
-      new bootstrap.Modal(templateInstance.$('.js-dashboard-modal')[0], { focus: false }).show()
+      new Modal(templateInstance.$('.js-dashboard-modal')[0], { focus: false }).show()
     })
   },
 
@@ -85,7 +85,7 @@ Template.projectDashboards.events({
     event.preventDefault()
     const dashboardId = templateInstance.$(event.currentTarget).data('dashboard-id')
 
-    if (confirm(t('administration.confirm_delete'))) {
+    if (window.confirm(t('administration.confirm_delete'))) {
       Meteor.call('removeDashboard', { dashboardId }, (err) => {
         if (err) {
           showErrorToast('Could not remove dashboard: ' + (err.reason || 'Unknown error'))
@@ -104,7 +104,7 @@ Template.projectDashboards.events({
 
     templateInstance.editingDashboard.set(dashboard)
     Tracker.afterFlush(() => {
-      new bootstrap.Modal(templateInstance.$('.js-dashboard-modal')[0], { focus: false }).show()
+      new Modal(templateInstance.$('.js-dashboard-modal')[0], { focus: false }).show()
     })
   },
 

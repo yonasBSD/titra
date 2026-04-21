@@ -1,4 +1,4 @@
-import bootstrap from 'bootstrap'
+import { Modal } from 'bootstrap'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
@@ -177,7 +177,7 @@ Template.dashboardModal.events({
         showErrorToast(t('dashboard.updateFailed') + ': ' + (err.reason || t('notifications.unknown_error')))
       } else {
         showToast(t('dashboard.updatedSuccessfully'))
-        bootstrap.Modal.getInstance(templateInstance.$('.js-dashboard-modal')[0])?.hide()
+        Modal.getInstance(templateInstance.$('.js-dashboard-modal')[0])?.hide()
       }
     })
   },
