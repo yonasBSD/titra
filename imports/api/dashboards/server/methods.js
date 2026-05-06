@@ -1,11 +1,13 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
+import bcrypt from 'bcrypt'
 import { Dashboards } from '../dashboards'
 import { sanitizeSlug } from '../../../utils/sanitizer'
-import { assertCanModifyDashboard,authenticationMixin, transactionLogMixin, getGlobalSettingAsync } from '../../../utils/server_method_helpers.js'
-import bcrypt from 'bcrypt';
+import {
+  assertCanModifyDashboard, authenticationMixin, transactionLogMixin, getGlobalSettingAsync,
+} from '../../../utils/server_method_helpers.js'
 
 // dashboard passwords salt rounds
-const saltRounds = 10;
+const saltRounds = 10
 // Remove existing index first
 
 // Create index with partialFilterExpression only (no sparse)
@@ -13,9 +15,9 @@ Dashboards.rawCollection().createIndex(
   { slug: 1 },
   {
     unique: true,
-    partialFilterExpression: { slug: { $exists: true, $gt: "" } }
-  }
-);
+    partialFilterExpression: { slug: { $exists: true, $gt: '' } },
+  },
+)
 
 /**
  * Adds a dashboard.
@@ -47,14 +49,14 @@ const addDashboard = new ValidatedMethod({
   },
   mixins: [authenticationMixin, transactionLogMixin],
   async run({
-    projectId, timePeriod,resourceId,customer, startDate, endDate, password, slug
+    projectId, timePeriod, resourceId, customer, startDate, endDate, password, slug,
   }) {
     let inserted_slug
     if (slug) {
       const sanitizedSlug = sanitizeSlug(slug)
-      const existing = await Dashboards.findOneAsync({ slug:sanitizedSlug });
+      const existing = await Dashboards.findOneAsync({ slug: sanitizedSlug })
       if (existing) {
-        throw new Meteor.Error('slug-exists', 'This URL is already taken.');
+        throw new Meteor.Error('slug-exists', 'This URL is already taken.')
       } else {
         inserted_slug = sanitizedSlug
       }
@@ -70,13 +72,13 @@ const addDashboard = new ValidatedMethod({
     if (meteorUser.profile.hoursToDays) {
       hoursToDays = meteorUser.profile.hoursToDays
     }
-    let hashedPassword = null;
+    let hashedPassword = null
     if (password) {
-      hashedPassword = await bcrypt.hash(password, saltRounds);
+      hashedPassword = await bcrypt.hash(password, saltRounds)
     }
     const _id = Random.id()
     await Dashboards.insertAsync({
-      _id, projectId, timePeriod, customer,resourceId, startDate, endDate, timeunit, hoursToDays, password:hashedPassword, slug:inserted_slug
+      _id, projectId, timePeriod, customer, resourceId, startDate, endDate, timeunit, hoursToDays, password: hashedPassword, slug: inserted_slug,
     })
     return _id
   },
@@ -104,23 +106,22 @@ const updateDashboard = new ValidatedMethod({
       startDate: Match.Optional(String),
       endDate: Match.Optional(String),
       slug: Match.Optional(String),
-      password: Match.Optional(String)
+      password: Match.Optional(String),
     })
   },
   mixins: [authenticationMixin, transactionLogMixin],
   async run({
-    dashboardId, timePeriod, startDate, endDate, slug, password
+    dashboardId, timePeriod, startDate, endDate, slug, password,
   }) {
-
-    await assertCanModifyDashboard(this.userId, dashboardId);
+    await assertCanModifyDashboard(this.userId, dashboardId)
 
     const update = {}
     const sanitizedSlug = sanitizeSlug(slug)
 
     if (slug) {
-      const existing = await Dashboards.findOneAsync({ slug:sanitizedSlug });
+      const existing = await Dashboards.findOneAsync({ slug: sanitizedSlug })
       if (existing && (existing._id != dashboardId)) {
-        throw new Meteor.Error('slug-exists', 'This URL is already taken.');
+        throw new Meteor.Error('slug-exists', 'This URL is already taken.')
       }
     }
 
@@ -135,11 +136,10 @@ const updateDashboard = new ValidatedMethod({
     }
     return Dashboards.updateAsync(
       { _id: dashboardId },
-      { $set: update }
+      { $set: update },
     )
-  }
+  },
 })
-
 
 /**
  * Removes a dashboard.
@@ -158,18 +158,12 @@ const removeDashboard = new ValidatedMethod({
   },
   mixins: [authenticationMixin, transactionLogMixin],
   async run({
-    dashboardId
+    dashboardId,
   }) {
+    await assertCanModifyDashboard(this.userId, dashboardId)
+    const removedCount = await Dashboards.removeAsync(dashboardId)
 
-    console.log("Removing dashboad : ",dashboardId)
-    // console.log("")
-
-    await assertCanModifyDashboard(this.userId, dashboardId);
-
-    console.log("passed checks")
-    const removedCount = await Dashboards.removeAsync(dashboardId);
-
-    return removedCount; // usually 1 or 0
+    return removedCount // usually 1 or 0
   },
 })
 
@@ -201,9 +195,10 @@ const checkDashboardSlug = new ValidatedMethod({
       query._id = { $ne: currentDashboardId }
     }
     const match = await Dashboards.findOneAsync(query)
-    return match ? false : true
+    return !match
   },
 })
 
-
-export { addDashboard, updateDashboard, removeDashboard, checkDashboardSlug }
+export {
+  addDashboard, updateDashboard, removeDashboard, checkDashboardSlug,
+}

@@ -41,6 +41,16 @@ FlowRouter.route('/tracktime/:projectId?', {
   },
   name: 'tracktime',
 })
+FlowRouter.route('/tracktime', {
+  waitOn() {
+    return import('../../ui/pages/track/tracktime.js')
+  },
+  action() {
+    document.title = 'titra - track time'
+    this.render('appLayout', 'tracktimemain')
+  },
+  name: 'tracktimewithoutparam',
+})
 FlowRouter.route('/edit/timecard/:tcid', {
   waitOn() {
     return import('../../ui/pages/track/tracktime.js')
@@ -169,7 +179,7 @@ FlowRouter.route('/try', {
       FlowRouter.go('/')
     } else if (getGlobalSetting('enableAnonymousLogins')) {
       AccountsAnonymous.login((error) => {
-        console.log(error)
+        console.error(error)
         if (!error) {
           FlowRouter.go('/')
         } else {

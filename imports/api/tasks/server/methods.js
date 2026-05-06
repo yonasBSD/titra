@@ -1,7 +1,12 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { check, Match } from 'meteor/check'
 import Tasks from '../tasks.js'
+import { sanitizeObject } from '../../../utils/sanitizer.js'
 import { authenticationMixin, transactionLogMixin } from '../../../utils/server_method_helpers.js'
+
+const taskForbiddenCustomfieldKeys = new Set([
+  '_id', 'projectId', 'name', 'start', 'end', 'estimatedHours', 'dependencies', 'isDefaultTask', 'userId', 'createdAt', 'updatedAt',
+])
 
 /**
 Inserts a new project task into the Tasks collection.
@@ -31,7 +36,7 @@ const insertProjectTask = new ValidatedMethod({
     projectId, name, start, end, estimatedHours, dependencies, customfields,
   }) {
     await Tasks.insertAsync({
-      ...customfields,
+      ...sanitizeObject(customfields, taskForbiddenCustomfieldKeys),
       projectId,
       name,
       start,
@@ -74,7 +79,7 @@ const updateTask = new ValidatedMethod({
   }) {
     await Tasks.updateAsync(taskId, {
       $set: {
-        ...customfields,
+        ...sanitizeObject(customfields, taskForbiddenCustomfieldKeys),
         name,
         start,
         end,

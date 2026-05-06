@@ -2,9 +2,14 @@ import { Match, check } from 'meteor/check'
 import { WebApp } from 'meteor/webapp'
 import { getJson } from './bodyparser'
 import { insertTimeCard } from '../imports/api/timecards/server/methods'
+import { sanitizeObject } from '../imports/utils/sanitizer.js'
 import Timecards from '../imports/api/timecards/timecards'
 import Projects from '../imports/api/projects/projects'
 import Tasks from '../imports/api/tasks/tasks'
+
+const taskForbiddenCustomfieldKeys = new Set([
+  '_id', 'projectId', 'name', 'start', 'end', 'estimatedHours', 'dependencies', 'isDefaultTask', 'userId', 'createdAt', 'updatedAt',
+])
 
 function normalizeDomain(host) {
   if (!host) return null
@@ -560,14 +565,15 @@ WebApp.handlers.use('/project/task/create/', async (req, res) => {
       return
     }
 
+    const safeCustomfields = sanitizeObject(json.customfields, taskForbiddenCustomfieldKeys)
     const taskId = await Tasks.insertAsync({
+      ...safeCustomfields,
       projectId: json.projectId,
       name: json.name,
       start: new Date(json.start),
       end: new Date(json.end),
       estimatedHours: json.estimatedHours,
       dependencies: json.dependencies,
-      ...json.customfields,
     })
 
     const payload = { taskId }

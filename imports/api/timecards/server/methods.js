@@ -8,6 +8,7 @@ import Tasks from '../../tasks/tasks.js'
 import Projects from '../../projects/projects.js'
 import { t } from '../../../utils/i18n.js'
 import { emojify } from '../../../utils/frontend_helpers'
+import { sanitizeObject } from '../../../utils/sanitizer.js'
 import { timeInUserUnitAsync } from '../../../utils/periodHelpers.js'
 import {
   authenticationMixin,
@@ -21,6 +22,10 @@ import {
   calculateSimilarity,
 } from '../../../utils/server_method_helpers.js'
 import { getOpenAIResponse } from '../../../utils/openai/openai_server.js'
+
+const timeEntryForbiddenCustomfieldKeys = new Set([
+  '_id', 'userId', 'projectId', 'date', 'hours', 'task', 'taskRate', 'state', 'lastUsed', 'name', 'createdAt', 'updatedAt',
+])
 
 /**
  * Inserts a new timecard into the Timecards collection.
@@ -84,8 +89,9 @@ async function checkTimeEntryRule({
  * @throws {Meteor.Error} If time entry rule throws an error.
  */
 async function insertTimeCard(projectId, task, date, hours, userId, taskRate, customfields) {
+  const safeCustomfields = sanitizeObject(customfields, timeEntryForbiddenCustomfieldKeys)
   const newTimeCard = {
-    ...customfields,
+    ...safeCustomfields,
     userId,
     projectId,
     date,
@@ -97,12 +103,12 @@ async function insertTimeCard(projectId, task, date, hours, userId, taskRate, cu
   }
   if (!await Tasks.findOneAsync({ $or: [{ userId }, { projectId }], name: await emojify(task) })) {
     await Tasks.insertAsync({
-      ...customfields, userId, lastUsed: new Date(), name: await emojify(task),
+      ...safeCustomfields, userId, lastUsed: new Date(), name: await emojify(task),
     })
   } else {
     await Tasks.updateAsync(
       { $or: [{ userId }, { projectId }], name: await emojify(task) },
-      { $set: { ...customfields, lastUsed: new Date() } },
+      { $set: { ...safeCustomfields, lastUsed: new Date() } },
     )
   }
   return Timecards.insertAsync(newTimeCard)
@@ -311,11 +317,12 @@ const updateTimeCard = new ValidatedMethod({
     await checkTimeEntryRule({
       userId, projectId, task, state: timecard.state, date, hours,
     })
+    const safeCustomfields = sanitizeObject(customfields, timeEntryForbiddenCustomfieldKeys)
     if (!await Tasks.findOneAsync({ userId, name: await emojify(task) })) {
-      await Tasks.insertAsync({ ...customfields, userId, name: await emojify(task) })
+      await Tasks.insertAsync({ ...safeCustomfields, userId, name: await emojify(task) })
     }
     const fieldsToSet = {
-      ...customfields,
+      ...safeCustomfields,
       projectId,
       date,
       hours,
@@ -628,10 +635,8 @@ const getWorkingHoursForPeriod = new ValidatedMethod({
     const totalEntries = totalEntriesTimecardsRaw.length
     const workingHoursObject = {}
     workingHoursObject.totalEntries = totalEntries
-    console.log(JSON.stringify(aggregationSelector))
     const workingHoursTimeCardsRaw = await Timecards.rawCollection().aggregate(aggregationSelector)
       .toArray()
-      console.log(workingHoursTimeCardsRaw)
     const workingHours = await Promise.all(workingHoursTimeCardsRaw.map(workingTimeEntriesMapper))
     workingHoursObject.workingHours = workingHours
     return workingHoursObject
@@ -999,7 +1004,6 @@ const bulkInsertTimecards = new ValidatedMethod({
     check(args, {
       timecards: Array,
     })
-    console.log(args.timecards)
     args.timecards.forEach((timecard) => {
       check(timecard, {
         projectId: String,
