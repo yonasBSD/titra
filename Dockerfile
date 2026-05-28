@@ -1,6 +1,6 @@
 FROM node:22.22
 ENV METEOR_ALLOW_SUPERUSER true
-RUN curl https://install.meteor.com/\?release\=3.3 | sh
+RUN curl https://install.meteor.com/\?release\=3.4.1 | sh
 RUN meteor --version
 WORKDIR /app/
 COPY package.json .
