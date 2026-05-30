@@ -19,7 +19,6 @@ jobs:
       - name: Autotag
         id: autotag
         uses: jaywcjlove/create-tag-action@v2.3.0
-        if: env.previous_tag
         env:
           token: ${{ github.token }}
         with:
