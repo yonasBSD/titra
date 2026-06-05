@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 import { OAuth } from 'meteor/oauth'
 import { Random } from 'meteor/random'
 import { ServiceConfiguration } from 'meteor/service-configuration'
@@ -39,6 +38,7 @@ function registerOidc() {
     options.client_id = config.clientId
     options.response_type = 'code'
     options.redirect_uri = OAuth._redirectUri(SERVICE_NAME, config)
+    options.redirectUrl = '/'
     options.state = OAuth._stateParam(loginStyle, credentialToken, options.redirectUrl)
     options.scope = scope.join(' ')
 
